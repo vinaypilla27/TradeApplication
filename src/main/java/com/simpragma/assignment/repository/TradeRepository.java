@@ -24,4 +24,6 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
     @Query(value = "SELECT min(t.price) FROM Trade t where t.symbol = ?1 and t.timestamp >= ?2 and t.timestamp <= ?3")
     Double getMinPriceOfStockSymbol(final String stockSymbol, final Date startDate, final Date endDate);
 
+    Long countDistinctBySymbol(final String symbol);
+
 }

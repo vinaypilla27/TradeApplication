@@ -16,12 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
 @Service
 public class TradeService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TradeService.class);
 
     private final TradeRepository tradeRepository;
     private final UserRepository userRepository;
@@ -44,7 +43,7 @@ public class TradeService {
         Optional<Trade> mayBeTrade = tradeRepository.findById(trade.getId());
         if (mayBeTrade.isPresent()) {
             throw new InvalidInputException(
-                    String.format("Trade already exists with the given id: %s", trade.getId()));
+                    format("Trade already exists with the given id: %s", trade.getId()));
         }
         tradeRepository.save(trade);
     }
@@ -55,23 +54,32 @@ public class TradeService {
 
     public List<Trade> getTradesByUserId(final Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundException(String.format("User with id: '%s' does not exist", userId));
+            throw new NotFoundException(format("User with id: '%s' does not exist", userId));
         }
         return tradeRepository.fetchAllTradesByUser(userId);
     }
 
     public List<Trade> getTradesByStockSymbol(final String stockSymbol,
             final String tradeType, final Date startDate, final Date endDate) {
+        throwExceptionIfStockSymbolDoesNotExist(stockSymbol);
         return tradeRepository.fetchAllTradesByStockSymbolAndType(stockSymbol, tradeType, startDate, endDate);
     }
 
     public StockPriceRange getMaxAndMinTradePriceOfStockSymbol(final String stockSymbol, final Date startDate, final Date endDate) {
+        throwExceptionIfStockSymbolDoesNotExist(stockSymbol);
         Double maxPriceOfStockSymbol = tradeRepository.getMaxPriceOfStockSymbol(stockSymbol, startDate, endDate);
         Double minPriceOfStockSymbol = tradeRepository.getMinPriceOfStockSymbol(stockSymbol, startDate, endDate);
-        if(maxPriceOfStockSymbol == null || minPriceOfStockSymbol == null) {
+        if (maxPriceOfStockSymbol == null || minPriceOfStockSymbol == null) {
             return null;
         }
         return new StockPriceRange(stockSymbol, maxPriceOfStockSymbol, minPriceOfStockSymbol);
+    }
+
+    private void throwExceptionIfStockSymbolDoesNotExist(final String stockSymbol) {
+        Long tradesWithTheStockSymbol = tradeRepository.countDistinctBySymbol(stockSymbol);
+        if (tradesWithTheStockSymbol <= 0) {
+            throw new NotFoundException("Stock symbol does not exist");
+        }
     }
 
 }

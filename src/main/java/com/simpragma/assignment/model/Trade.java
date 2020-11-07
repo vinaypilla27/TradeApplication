@@ -14,6 +14,7 @@ import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -24,9 +25,9 @@ import static java.math.RoundingMode.HALF_DOWN;
 public class Trade {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Pattern(regexp = "buy|sell", message = "Type should be either buy or sell")
     private String type;
 
     @ManyToOne
@@ -34,12 +35,12 @@ public class Trade {
 
     private String symbol;
 
-    @Min(10)
-    @Max(30)
+    @Min(value = 10, message = "Number of shares are less than 10")
+    @Max(value = 30, message = "Number of shares are greater than 30")
     private int shares;
 
-    @DecimalMin("130.42")
-    @DecimalMax("195.65")
+    @DecimalMin(value = "130.42", message = "Share price is less than 130.42")
+    @DecimalMax(value = "195.65", message = "Share price is greater than 195.65")
     private double price;
 
     @Temporal(TemporalType.TIMESTAMP)

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserResource.class);
@@ -27,14 +27,17 @@ public class UserResource {
         this.userService = userService;
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<User> addUser(@RequestBody User user) {
-
-        return ResponseEntity.ok(userService.saveUser(user));
+        LOGGER.info("Received a request to add a new user");
+        User savedUser = userService.addUser(user);
+        LOGGER.info("Successfully added a new user with id : {}", savedUser.getId());
+        return ResponseEntity.ok(savedUser);
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<User>> users() {
+        LOGGER.info("Received a request to fetch all the users");
         return ResponseEntity.ok(userService.getUsers());
     }
 
